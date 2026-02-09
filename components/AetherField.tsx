@@ -97,7 +97,11 @@ export default function AetherField() {
     if (!gl) return
 
     // Create shader
-    function createShader(type: number, source: string): WebGLShader | null {
+    function createShader(
+      gl: WebGLRenderingContext,
+      type: number,
+      source: string
+    ): WebGLShader | null {
       const shader = gl.createShader(type)
       if (!shader) return null
       gl.shaderSource(shader, source)
@@ -111,8 +115,8 @@ export default function AetherField() {
     }
 
     // Create program
-    const vertex = createShader(gl.VERTEX_SHADER, vertexShader)
-    const fragment = createShader(gl.FRAGMENT_SHADER, fragmentShader)
+    const vertex = createShader(gl, gl.VERTEX_SHADER, vertexShader)
+    const fragment = createShader(gl, gl.FRAGMENT_SHADER, fragmentShader)
     if (!vertex || !fragment) return
 
     const program = gl.createProgram()
