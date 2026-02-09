@@ -216,6 +216,8 @@ export default function AetherField() {
     window.addEventListener('resize', resize)
 
     function render() {
+      if (!gl || !canvas) return
+      
       timeRef.current += 0.016 // ~60fps
 
       gl.useProgram(program)
