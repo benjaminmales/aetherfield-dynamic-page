@@ -1,18 +1,10 @@
 'use client'
 
 import AetherField from '@/components/AetherField'
-import { useEffect, useState } from 'react'
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
+  const logoPath =
+    'M854.4,0c2.2,87.8,27.4,172.2,77.9,244.1,70.5,100.2,182.9,165.4,305.8,177.5,8.5.8,21.4,2.2,37.5,2.4v426.4c-57.4-2.3-113.6-6.4-169.9-17.6C753.7,763.2,478.3,465.7,433.6,111.7l-7.6-70.7v807H0V0h854.4Z'
 
   return (
     <main
@@ -27,20 +19,29 @@ export default function Home() {
       <div
         style={{
           position: 'absolute',
-          bottom: '3rem',
+          top: '50%',
           left: '50%',
-          transform: 'translateX(-50%)',
-          textAlign: 'center',
-          fontSize: '0.875rem',
-          letterSpacing: '0.1em',
-          opacity: 0.4,
-          fontWeight: 300,
+          transform: 'translate(-50%, -50%)',
+          width: '40vw',
+          maxWidth: '600px',
+          minWidth: '280px',
+          height: 'auto',
           pointerEvents: 'none',
           userSelect: 'none',
         }}
+        className="logo-container"
       >
-        <div style={{ marginBottom: '0.5rem' }}>ÆTHERFIELD</div>
-        <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>field state</div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1275.6 850.4"
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <path d={logoPath} fill="black" fillRule="evenodd" />
+        </svg>
       </div>
     </main>
   )

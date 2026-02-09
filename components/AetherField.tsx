@@ -50,16 +50,69 @@ const fragmentShader = `
     // Combine patterns
     float field = interference * 0.6 + wave * 0.4;
     
-    // Mouse influence (subtle disturbance)
-    vec2 mouseNorm = u_mouse / u_resolution;
+    // Mouse influence (always active, subtle disturbance)
+    vec2 mouseNorm = vec2(u_mouse.x / u_resolution.x, 1.0 - u_mouse.y / u_resolution.y);
     float dist = length(p - mouseNorm);
-    float influence = exp(-dist * 8.0) * u_presence;
-    field += influence * 0.3;
+    float baseInfluence = exp(-dist * 6.0) * 0.15;
+    float presenceInfluence = exp(-dist * 8.0) * u_presence * 0.3;
+    field += baseInfluence + presenceInfluence;
     
     // Density modulation
     field *= (0.7 + u_density * 0.3);
     
     return field;
+  }
+
+  // Aurora color palette - wide spectrum with many colors
+  vec3 auroraColor(float intensity) {
+    // Create a spectrum that shifts through aurora colors
+    float hue = intensity * 3.0 + u_time * 0.05 + length(gl_FragCoord.xy / u_resolution.xy - vec2(0.5)) * 0.5;
+    
+    // Expanded aurora colors: full spectrum
+    vec3 color1 = vec3(0.0, 1.0, 0.8);   // Bright cyan
+    vec3 color2 = vec3(0.0, 1.0, 0.5);   // Emerald green
+    vec3 color3 = vec3(0.3, 1.0, 0.4);   // Lime green
+    vec3 color4 = vec3(0.6, 1.0, 0.3);   // Yellow-green
+    vec3 color5 = vec3(1.0, 0.9, 0.2);   // Yellow
+    vec3 color6 = vec3(1.0, 0.6, 0.1);   // Orange
+    vec3 color7 = vec3(1.0, 0.3, 0.5);   // Pink-red
+    vec3 color8 = vec3(1.0, 0.2, 0.8);   // Magenta
+    vec3 color9 = vec3(0.8, 0.2, 1.0);   // Purple
+    vec3 color10 = vec3(0.4, 0.3, 1.0);  // Indigo
+    vec3 color11 = vec3(0.2, 0.5, 1.0);  // Blue
+    vec3 color12 = vec3(0.0, 0.7, 1.0);  // Sky blue
+    
+    // Cycle through colors based on position and time
+    float phase = fract(hue);
+    
+    vec3 color;
+    if (phase < 0.083) {
+      color = mix(color1, color2, phase * 12.0);
+    } else if (phase < 0.166) {
+      color = mix(color2, color3, (phase - 0.083) * 12.0);
+    } else if (phase < 0.25) {
+      color = mix(color3, color4, (phase - 0.166) * 12.0);
+    } else if (phase < 0.333) {
+      color = mix(color4, color5, (phase - 0.25) * 12.0);
+    } else if (phase < 0.416) {
+      color = mix(color5, color6, (phase - 0.333) * 12.0);
+    } else if (phase < 0.5) {
+      color = mix(color6, color7, (phase - 0.416) * 12.0);
+    } else if (phase < 0.583) {
+      color = mix(color7, color8, (phase - 0.5) * 12.0);
+    } else if (phase < 0.666) {
+      color = mix(color8, color9, (phase - 0.583) * 12.0);
+    } else if (phase < 0.75) {
+      color = mix(color9, color10, (phase - 0.666) * 12.0);
+    } else if (phase < 0.833) {
+      color = mix(color10, color11, (phase - 0.75) * 12.0);
+    } else if (phase < 0.916) {
+      color = mix(color11, color12, (phase - 0.833) * 12.0);
+    } else {
+      color = mix(color12, color1, (phase - 0.916) * 12.0);
+    }
+    
+    return color;
   }
 
   void main() {
@@ -68,13 +121,15 @@ const fragmentShader = `
     
     float f = field(p);
     
-    // Near-black background with off-white energy
-    vec3 color = vec3(0.02, 0.02, 0.025);
-    vec3 energy = vec3(0.85, 0.88, 0.9);
+    // Pure black background
+    vec3 color = vec3(0.0, 0.0, 0.0);
     
-    // Soft, restrained energy
-    float intensity = pow(f, 1.5) * 0.4;
-    color = mix(color, energy, intensity);
+    // Aurora energy with wide spectrum
+    float intensity = pow(f, 1.2) * 0.6;
+    vec3 aurora = auroraColor(f + length(p - vec2(0.5)) * 0.5);
+    
+    // Blend aurora colors based on intensity
+    color = mix(color, aurora, intensity);
     
     gl_FragColor = vec4(color, 1.0);
   }
