@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'ÆTHERFIELD',
-  description: 'field state',
+  description: '',
 }
 
 export const viewport: Viewport = {
