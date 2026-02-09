@@ -203,6 +203,7 @@ export default function AetherField() {
     const densityLocation = gl.getUniformLocation(program, 'u_density')
 
     function resize() {
+      if (!canvas) return
       const dpr = window.devicePixelRatio || 1
       const displayWidth = canvas.clientWidth
       const displayHeight = canvas.clientHeight
