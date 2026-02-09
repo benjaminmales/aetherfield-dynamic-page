@@ -16,6 +16,7 @@ const fragmentShader = `
   uniform vec2 u_mouse;
   uniform float u_presence;
   uniform float u_density;
+  uniform float u_pulse;
 
   // Smooth noise function
   float noise(vec2 p) {
@@ -125,7 +126,9 @@ const fragmentShader = `
     vec3 color = vec3(0.0, 0.0, 0.0);
     
     // Aurora energy with wide spectrum
-    float intensity = pow(f, 1.2) * 0.6;
+    // Subtle pulse increases intensity momentarily (1.0 to 1.15 - 15% increase)
+    float baseIntensity = pow(f, 1.2) * 0.6;
+    float intensity = baseIntensity * (1.0 + u_pulse * 0.15);
     vec3 aurora = auroraColor(f + length(p - vec2(0.5)) * 0.5);
     
     // Blend aurora colors based on intensity
@@ -135,7 +138,11 @@ const fragmentShader = `
   }
 `
 
-export default function AetherField() {
+interface AetherFieldProps {
+  onPresenceChange?: (presence: number) => void
+}
+
+export default function AetherField({ onPresenceChange }: AetherFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [presence, setPresence] = useState(0)
   const [density, setDensity] = useState(0.5)
@@ -143,6 +150,11 @@ export default function AetherField() {
   const animationFrameRef = useRef<number>()
   const timeRef = useRef(0)
   const decayTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Notify parent of presence changes
+  useEffect(() => {
+    onPresenceChange?.(presence)
+  }, [presence, onPresenceChange])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -201,6 +213,7 @@ export default function AetherField() {
     const mouseLocation = gl.getUniformLocation(program, 'u_mouse')
     const presenceLocation = gl.getUniformLocation(program, 'u_presence')
     const densityLocation = gl.getUniformLocation(program, 'u_density')
+    const pulseLocation = gl.getUniformLocation(program, 'u_pulse')
 
     function resize() {
       if (!canvas || !gl) return
@@ -220,6 +233,22 @@ export default function AetherField() {
       
       timeRef.current += 0.016 // ~60fps
 
+      // Calculate pulse using resonant frequencies
+      // Base: Schumann resonance divided down (7.83 Hz / 10 = 0.783 Hz)
+      // Associated with grounding, connection, Earth's natural frequency
+      // With presence: speeds up toward alpha wave range (8-13 Hz / 10 = 0.8-1.3 Hz)
+      // Alpha waves: relaxed awareness, calm focus, creative flow
+      const schumannResonance = 7.83 / 10 // 0.783 Hz - grounding, connection
+      const alphaWaveMin = 8 / 10 // 0.8 Hz - relaxed awareness
+      const alphaWaveMax = 13 / 10 // 1.3 Hz - creative flow
+      
+      const baseFrequency = schumannResonance
+      const maxFrequency = alphaWaveMax
+      const pulseFrequency = baseFrequency + presence * (maxFrequency - baseFrequency)
+      
+      // Use a smoother pulse envelope (sine wave, only positive values)
+      const pulse = Math.max(0, Math.sin(timeRef.current * pulseFrequency * Math.PI * 2))
+
       gl.useProgram(program)
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
       gl.enableVertexAttribArray(positionLocation)
@@ -230,6 +259,7 @@ export default function AetherField() {
       gl.uniform2f(mouseLocation, mouseRef.current.x, mouseRef.current.y)
       gl.uniform1f(presenceLocation, presence)
       gl.uniform1f(densityLocation, density)
+      gl.uniform1f(pulseLocation, pulse)
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
